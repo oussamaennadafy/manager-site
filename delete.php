@@ -24,8 +24,8 @@ mysqli_free_result($result);
 ///////////////////////
 
 if(isset($_SESSION['done'])) {
-  echo"<div class='popUp' style='padding:20px;color: #000;
-  background-color: #fdd;
+  echo"<div class='popUp' style='padding:20px;color: #155724;
+  background-color: #d4edda;
   border-color: #c3e6cb;
   width:25%;
   margin:0 auto;

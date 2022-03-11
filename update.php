@@ -5,6 +5,9 @@ $incorrect_ref = 1;
 
 $conn = mysqli_connect('localhost', 'root', '', 'shopNow_werehouse' );
 
+$errors = array('Reference'=>'' , 'Name'=>'', 'Category'=>'', 'quantity'=>'');
+
+
 /////////////////////
 
 $sql = 'SELECT * FROM products';
@@ -46,23 +49,74 @@ if(isset($_SESSION['done'])) {
 
 if(isset($_POST['update'])){
 
-      $reference = htmlspecialchars($_POST['Reference']);
-      $name = htmlspecialchars($_POST['Name']);
-      $category = htmlspecialchars($_POST['Category']);
-      $quantity = htmlspecialchars($_POST['quantity']);
 
-      $sql = "UPDATE `products` SET `Name`='$name',`Category`='$category',`quantity`='$quantity' WHERE `Reference`='$reference'";
+        //check Reference
+        if(empty($_POST['Reference'])) {
+          $errors['Reference'] = 'Reference is required <br/>';
+        } else {
+          $reference = htmlspecialchars($_POST['Reference']);
+        }
+        
+        //check Name
+        if(empty($_POST['Name'])) {
+          $errors['Name'] = 'Name is required <br/>';
+        } else {
+          $name = htmlspecialchars($_POST['Name']);
+        }
+    
+        //check Category
+        if(empty($_POST['Category'])) {
+          $errors['Category'] = 'Category is required <br/>';
+        } else {
+          $category = htmlspecialchars($_POST['Category']);
+        }
+    
+        //check quantity
+        if(empty($_POST['quantity'])) {
+          $errors['quantity'] = 'quantity is required <br/>';
+        } else {
+          $quantity = htmlspecialchars($_POST['quantity']);
+        }  
 
-      $_SESSION['done'] = true;
+        
+        if(array_filter($errors)) {
+          //error in form
+          echo"<div class='popUp' style='padding:20px;color: #000;
+          background-color: #fdd;
+          border-color: #c3e6cb;
+          width:25%;
+          margin:0 auto;
+          position:absolute;
+          top:100px;
+          left:50%;
+          text-align:center;
+          transform:translate(-50%,0);
+          transition:300ms;
+          border-radius:5px;
+          z-index:1;
+          '><p style='font-size:20px;'>error (please fill all inputs)</p></div>";
+        } else {
 
-    if(mysqli_query($conn,$sql)) 
-    {
-      header("Location: update.php");
-    } 
-     
-  else{
-    echo "query error" . mysqli_error($conn);
-  }
+          $reference = htmlspecialchars($_POST['Reference']);
+          $name = htmlspecialchars($_POST['Name']);
+          $category = htmlspecialchars($_POST['Category']);
+          $quantity = htmlspecialchars($_POST['quantity']);
+
+
+          $sql = "UPDATE `products` SET `Name`='$name',`Category`='$category',`quantity`='$quantity' WHERE `Reference`='$reference'";
+      
+          $_SESSION['done'] = true;
+    
+          // save to dataBase
+          if(mysqli_query($conn,$sql)) {
+            //database added
+            header('Location: update.php');
+          } else {
+            echo 'query error: ' . mysqli_error($conn); 
+          }
+
+
+      }
 }
 ?>
 
@@ -100,8 +154,6 @@ if(isset($_POST['update'])){
         </form>
       </div>
 
-
-
       <?php if(isset($_POST['submit'])) { ?>
         <?php foreach($products as $product) {
           if($_POST['ref'] == $product['Reference']) { ?>
@@ -109,21 +161,24 @@ if(isset($_POST['update'])){
         <h1 class="head_one">product</h1>
         <form  method="POST">
           <div class="cnt_of_form">
-            <label class="label" for="ref">Reference Number</label>
-            <input id='ref' name="Reference" value='<?php echo htmlspecialchars($product['Reference']) ?>' type="number" class="input" />
+            <label class="label" for="ref">Reference Number (Unchangable)</label>
+            <input ReadOnly id='ref' name="Reference" value='<?php echo htmlspecialchars($product['Reference']) ?>' type="number" class="input" />
           </div>
           <div class="cnt_of_form">
             <label class="label" for="name">Name</label>
             <input id='name' name="Name" value='<?php echo htmlspecialchars($product['Name']) ?>' type="text" class="input" />
           </div>
+          <div class="errors_paragraph"> <?php echo $errors['Name'] ?> </div>
           <div class="cnt_of_form">
             <label class="label" for="category">Category</label>
             <input id='category' name="Category" value='<?php echo htmlspecialchars($product['Category']) ?>' type="text" class="input" />
           </div>
+          <div class="errors_paragraph"> <?php echo $errors['Category'] ?> </div>
           <div class="cnt_of_form">
             <label class="label" for="qnt">quantity</label>
             <input id='qnt' name="quantity" value='<?php echo htmlspecialchars($product['quantity']) ?>' type="number" class="input" />
           </div>
+          <div class="errors_paragraph"> <?php echo $errors['quantity'] ?> </div>
           <div class="cnt_of_form spaecial_margin_bottom">
             <input type="hidden" name="ref" value="<?php echo $product['Reference'] ?>">
             <input  type="submit" name="update" value="update" class="anchor_search">
@@ -163,7 +218,7 @@ if(isset($_POST['update'])){
     ></script>
     <script src="script.js"></script>
     <script>
-    const myTimeout = setTimeout(moveAndDisappear, 1200);
+    const myTimeout = setTimeout(moveAndDisappear, 2400);
 
     function moveAndDisappear() {
       document.querySelector(".popUp").style.opacity = '0';

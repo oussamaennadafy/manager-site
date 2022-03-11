@@ -41,10 +41,6 @@ if(isset($_SESSION['done'])) {
     } else {
       $Reference =  $_POST['Reference'];
     }
-
-    $check = 0;
-
-
     
     //check Name
     if(empty($_POST['Name'])) {
@@ -67,6 +63,10 @@ if(isset($_SESSION['done'])) {
       $quantity = $_POST['quantity'];
     }  
     
+
+    // $_SESSION['e'] = false;
+
+
     if(array_filter($errors)) {
       //error in form
     } else {
@@ -77,19 +77,29 @@ if(isset($_SESSION['done'])) {
       $Name = mysqli_real_escape_string($conn, $_POST['Name']);
       $Category = mysqli_real_escape_string($conn, $_POST['Category']);
       $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+      foreach($products as $product)
+      {
+        // print_r($product['Reference']);
+        if($Referece == $product['Reference'])
+        {
+          $_SESSION['e'] = true;
+        } 
+      }
+      if(!isset($_SESSION['e'])){
+        $sql = "INSERT INTO products(Reference,Name,Category,quantity) VALUES('$Referece', '$Name', '$Category', '$quantity')";
+
+        $_SESSION['done'] = true;
+        // save to dataBase
+        if(mysqli_query($conn,$sql)) {
+          //database added
+          header('Location: add.php');
+        } else {
+          echo 'query error: ' . mysqli_error($conn); 
+        }
+      }
       
       //create sql
-      $sql = "INSERT INTO products(Reference,Name,Category,quantity) VALUES('$Referece', '$Name', '$Category', '$quantity')";
-
-      $_SESSION['done'] = true;
-      
-      // save to dataBase
-      if(mysqli_query($conn,$sql)) {
-        //database added
-        header('Location: add.php');
-      } else {
-         echo 'query error: ' . mysqli_error($conn); 
-      }
+     
   }
 
 }
@@ -119,10 +129,21 @@ if(isset($_SESSION['done'])) {
         <h1 class="head_one">add product</h1>
         <form action="add.php" method="POST">
           <div class="cnt_of_form">
-            <label class="label" for="ref">Reference Number <span> *</span></label>
-            <input  type="number" class="input" name="Reference" />
-          </div> 
+            <label class="label" for="ref">Reference Number (Unchangable)<span> *</span></label>
+            <input type="number" class="input" name="Reference" />
+          </div>
           <div class="errors_paragraph"> <?php echo $errors['Reference'] ?> </div>
+          <div class="errors_paragraph"> 
+          <?php
+          if (isset($_SESSION['e'])){ ?>
+            <p>Reference already exist</p>
+            <style>
+              .cnt_of_form:first-child{
+                margin-bottom:0;
+              }
+            </style>
+          <?php unset($_SESSION['e']); }?>
+          </div>
           <div class="cnt_of_form">
             <label class="label" for="ref">Name<span> *</span></label>
             <input type="text" class="input" name="Name" />
